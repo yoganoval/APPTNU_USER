@@ -5,21 +5,17 @@ import { Link, usePage, useForm } from '@inertiajs/vue3'
 const sidebarOpen = ref(true)
 const page = usePage()
 
-// ✅ REACTIVE USER (INI FIX PENTING)
 const user = computed(() => page.props.auth.user)
 
-// logout
 const logoutForm = useForm({})
 const logout = () => {
     logoutForm.post(route('logout'))
 }
 
-// permission checker
 const can = (permission) => {
     return user.value?.permissions?.includes(permission)
 }
 
-// menu
 const menus = [
     {
         label: 'Dashboard',
@@ -47,14 +43,26 @@ const menus = [
     },
 ]
 
-// filtered menu (FIX REACTIVE)
 const filteredMenus = computed(() =>
     menus.filter(menu => can(menu.permission))
 )
+
+const isDark = ref(localStorage.getItem('dark') === 'true')
+
+if (isDark.value) {
+    document.documentElement.classList.add('dark')
+}
+
+const toggleDark = () => {
+    isDark.value = !isDark.value
+
+    document.documentElement.classList.toggle('dark', isDark.value)
+    localStorage.setItem('dark', isDark.value)
+}
 </script>
 
 <template>
-<div class="flex h-screen bg-gray-100 dark:bg-gray-900">
+<div class="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
 
     <!-- SIDEBAR -->
     <aside
@@ -64,7 +72,7 @@ const filteredMenus = computed(() =>
     >
 
         <!-- LOGO -->
-        <div class="h-16 flex items-center justify-center border-b px-4">
+        <div class="h-16 flex items-center justify-center border-b border-gray-200 dark:border-gray-700 px-4">
             <img
                 src="/images/logo-apptnu.png"
                 :class="sidebarOpen ? 'h-8' : 'h-5'"
@@ -78,20 +86,26 @@ const filteredMenus = computed(() =>
                 v-for="menu in filteredMenus"
                 :key="menu.label"
                 :href="menu.href"
-                @click="console.log('CLICK MENU:', menu.href)"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg
+                       text-gray-700 dark:text-gray-200
+                       hover:bg-gray-100 dark:hover:bg-gray-700
+                       hover:text-gray-900 dark:hover:text-white
+                       transition"
                 :class="!sidebarOpen ? 'justify-center' : ''"
             >
-                <span>{{ menu.icon }}</span>
+                <span class="text-lg">{{ menu.icon }}</span>
                 <span v-if="sidebarOpen">{{ menu.label }}</span>
             </Link>
         </nav>
 
         <!-- LOGOUT -->
-        <div class="p-2 border-t mt-auto">
+        <div class="p-2 border-t border-gray-200 dark:border-gray-700 mt-auto">
             <button
                 @click="logout"
-                class="w-full flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg
+                       text-red-500 dark:text-red-400
+                       hover:bg-red-50 dark:hover:bg-red-900/30
+                       transition"
                 :class="!sidebarOpen ? 'justify-center' : ''"
             >
                 <span>⎋</span>
@@ -104,28 +118,49 @@ const filteredMenus = computed(() =>
     <!-- CONTENT -->
     <div class="flex-1 flex flex-col">
 
-        <!-- TOPBAR -->
-        <header class="h-16 bg-white dark:bg-gray-800 border-b dark:border-gray-700 flex items-center justify-between px-6">
+        <!-- HEADER -->
+        <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 transition">
 
+            <!-- LEFT -->
             <button
                 @click="sidebarOpen = !sidebarOpen"
-                class="text-gray-600 dark:text-gray-300"
+                class="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition"
             >
                 ☰
             </button>
 
-            <div class="text-gray-700 dark:text-gray-200">
-                {{ user?.name }}
+            <!-- RIGHT -->
+            <div class="flex items-center gap-3">
+
+                <!-- DARK MODE -->
+                <button
+                    @click="toggleDark"
+                    class="w-9 h-9 flex items-center justify-center rounded-full
+                           bg-gray-200 dark:bg-gray-700
+                           text-gray-700 dark:text-gray-200
+                           hover:scale-105 transition"
+                >
+                    <span v-if="isDark">☀️</span>
+                    <span v-else>🌙</span>
+                </button>
+
+                <!-- USER -->
+                <div class="text-gray-700 dark:text-gray-200 font-medium">
+                    {{ user?.name }}
+                </div>
+
             </div>
+
         </header>
 
         <!-- HEADER SLOT -->
-        <div v-if="$slots.header" class="p-6 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
+        <div v-if="$slots.header"
+             class="p-6 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition">
             <slot name="header" />
         </div>
 
         <!-- MAIN -->
-        <main class="flex-1 p-6 overflow-y-auto">
+        <main class="flex-1 p-6 overflow-y-auto text-gray-800 dark:text-gray-100 transition">
             <slot />
         </main>
 

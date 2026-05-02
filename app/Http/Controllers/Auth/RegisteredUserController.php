@@ -46,6 +46,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        $user->assignRole('anggota');
+
         // upload file
         $logo = null;
         $surat = null;

@@ -37,10 +37,14 @@ class RoleController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'permissions' => 'array'
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,name'
         ]);
 
-        $role->update(['name' => $request->name]);
+        $role->update([
+            'name' => $request->name,
+            'guard_name' => 'web'
+        ]);
         $role->syncPermissions($request->permissions ?? []);
 
         return redirect()->back();

@@ -11,13 +11,15 @@ class UserController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Users/Index', [
-            'users' => User::latest()->get()
+            'users' => User::with('roles')->latest()->get()
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Admin/Users/Create');
+        return Inertia::render('Admin/Users/Create', [
+            'roles' => \Spatie\Permission\Models\Role::all()
+        ]);
     }
 
     public function store(Request $request)
@@ -25,22 +27,26 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'password' => 'required|min:6',
+            'role' => 'required'
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
 
-        return redirect()->route('users.index')->with('success', 'User created');
+        $user->assignRole($request->role);
+
+        return redirect()->route('admin.users.index');
     }
 
     public function edit(User $user)
     {
         return Inertia::render('Admin/Users/Edit', [
-            'user' => $user
+            'user' => $user->load('roles'),
+            'roles' => \Spatie\Permission\Models\Role::all()
         ]);
     }
 
@@ -48,7 +54,8 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email',
+            'role' => 'required'
         ]);
 
         $user->update([
@@ -56,7 +63,9 @@ class UserController extends Controller
             'email' => $request->email,
         ]);
 
-        return redirect()->route('users.index')->with('success', 'User updated');
+        $user->syncRoles([$request->role]);
+
+        return redirect()->route('admin.users.index');
     }
 
     public function destroy(User $user)
