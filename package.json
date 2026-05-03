@@ -29,6 +29,8 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "konva": "^10.3.0",
+        "vue-konva": "^3.4.0",
         "ziggy-js": "^2.6.2"
     }
 }

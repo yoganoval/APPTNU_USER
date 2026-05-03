@@ -16,34 +16,49 @@ class PermissionController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|unique:permissions,name',
-        ]);
+        // CRUD
+        if ($request->module && $request->actions) {
+            foreach ($request->actions as $action) {
+                Permission::firstOrCreate([
+                    'name' => $request->module . '.' . $action
+                ]);
+            }
+        }
 
-        Permission::create([
-            'name' => $request->name,
-            'guard_name' => 'web'
-        ]);
+        // CUSTOM (bebas)
+        if ($request->custom) {
+            $permissions = explode(',', $request->custom);
 
-        return redirect()->back();
+            foreach ($permissions as $perm) {
+                $perm = trim($perm);
+
+                if ($perm) {
+                    Permission::firstOrCreate([
+                        'name' => $perm
+                    ]);
+                }
+            }
+        }
+
+        return back()->with('success', 'Permission berhasil dibuat');
     }
-
     public function update(Request $request, Permission $permission)
     {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required|string'
         ]);
 
         $permission->update([
             'name' => $request->name
         ]);
 
-        return redirect()->back();
+        return back()->with('success', 'Permission berhasil diupdate');
     }
 
     public function destroy(Permission $permission)
     {
         $permission->delete();
-        return redirect()->back();
+
+        return back()->with('success', 'Permission berhasil dihapus');
     }
 }

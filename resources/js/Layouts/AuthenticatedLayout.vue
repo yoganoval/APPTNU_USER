@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { Link, usePage, useForm } from '@inertiajs/vue3'
+import { menus } from '@/Layouts/menu'
+import Icon from '@/Components/Icon.vue'
 
 const sidebarOpen = ref(true)
 const page = usePage()
@@ -16,32 +18,6 @@ const can = (permission) => {
     return user.value?.permissions?.includes(permission)
 }
 
-const menus = [
-    {
-        label: 'Dashboard',
-        icon: '🏠',
-        href: route('dashboard'),
-        permission: 'dashboard.view',
-    },
-    {
-        label: 'User Management',
-        icon: '👤',
-        href: route('admin.users.index'),
-        permission: 'user.view',
-    },
-    {
-        label: 'Role Management',
-        icon: '🛡️',
-        href: route('admin.roles.index'),
-        permission: 'role.view',
-    },
-    {
-        label: 'Permission',
-        icon: '🔐',
-        href: route('admin.permissions.index'),
-        permission: 'permission.view',
-    },
-]
 
 const filteredMenus = computed(() =>
     menus.filter(menu => can(menu.permission))
@@ -93,7 +69,7 @@ const toggleDark = () => {
                        transition"
                 :class="!sidebarOpen ? 'justify-center' : ''"
             >
-                <span class="text-lg">{{ menu.icon }}</span>
+                <Icon :name="menu.icon" />
                 <span v-if="sidebarOpen">{{ menu.label }}</span>
             </Link>
         </nav>
