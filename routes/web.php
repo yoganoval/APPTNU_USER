@@ -94,9 +94,26 @@ Route::middleware(['auth', 'role:admin'])
             ->name('certificate.fields.store');
 
         // EDITOR (🔥 FIXED — NO DOUBLE /admin)
-        Route::get('/certificate-editor', function () {
-            return Inertia::render('Admin/CertificateEditor');
-        })->name('certificate.editor');
+        Route::get('/certificate-editor/{id}', [CertificateTemplateController::class, 'show'])
+            ->name('certificate.editor');
+
+        Route::get('/certificates', [CertificateController::class, 'index'])
+            ->name('certificates.index');
+
+
+        // 🔹 FIELD (yang tadi kamu buat)
+        Route::post('/certificate-fields', [CertificateFieldController::class, 'store'])
+            ->middleware('permission:certificate.edit');
+
+        // 🔹 GENERATE
+        Route::get('/certificates', [CertificateController::class, 'index'])
+            ->name('certificates.index')
+            ->middleware('permission:certificate.generate');
+
+        Route::get('/certificates/download/{event}', [CertificateController::class, 'download'])
+            ->name('certificates.download')
+            ->middleware('permission:certificate.generate');
+
 
 
         /*

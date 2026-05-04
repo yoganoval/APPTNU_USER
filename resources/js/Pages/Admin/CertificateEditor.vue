@@ -1,22 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { usePage } from '@inertiajs/vue3'
+import { ref, onMounted, watch } from 'vue'
+import { usePage, router, Head } from '@inertiajs/vue3'
 import axios from 'axios'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const page = usePage()
+const template = page.props.template ?? null
+const templateId = template?.id ?? null
 
-// 🔥 ambil dari backend
-const template = page.props.template
-
-const templateId = template.id
-
-// canvas
+/* =========================
+   CANVAS
+========================= */
 const stageConfig = {
   width: 1200,
   height: 800
 }
 
-// background
 const bgConfig = ref({
   x: 0,
   y: 0,
@@ -25,105 +24,175 @@ const bgConfig = ref({
   image: null
 })
 
-// default text
-const nameText = ref({
-  x: 400,
-  y: 300,
-  text: 'NAMA PESERTA',
-  fontSize: 32,
-  fill: '#000',
-  draggable: true
-})
-
-const eventText = ref({
-  x: 400,
-  y: 400,
-  text: 'NAMA EVENT',
-  fontSize: 24,
-  fill: '#333',
-  draggable: true
-})
+/* =========================
+   FIELDS
+========================= */
+const fields = ref([])
 
 /* =========================
    LOAD DATA
 ========================= */
 onMounted(() => {
+  if (!template) return
 
-  // 🔥 LOAD BACKGROUND DINAMIS
   const image = new window.Image()
-  image.src = `/storage/${template.background}`
-
+  image.src = `/storage/${template.background_image}`
   image.onload = () => {
     bgConfig.value.image = image
   }
 
-  // 🔥 LOAD FIELD POSITION
-  template.fields.forEach(field => {
-    if (field.field_name === 'name') {
-      nameText.value.x = field.x
-      nameText.value.y = field.y
-      nameText.value.fontSize = field.font_size
-    }
-
-    if (field.field_name === 'event') {
-      eventText.value.x = field.x
-      eventText.value.y = field.y
-      eventText.value.fontSize = field.font_size
-    }
-  })
+  if (template.fields && template.fields.length) {
+    fields.value = template.fields.map(f => ({
+      id: f.id,
+      field_name: f.field_name,
+      x: f.x,
+      y: f.y,
+      text: f.text || f.field_name,
+      fontSize: f.font_size || 24,
+      fill: '#000',
+      draggable: true
+    }))
+  }
 })
 
 /* =========================
-   SAVE POSITION
+   SYNC TEXT
 ========================= */
-function updatePosition(field, e) {
-  const node = e.target
+watch(fields, (newFields) => {
+  newFields.forEach(f => {
+    f.text = f.field_name
+  })
+}, { deep: true })
 
-  axios.post('/admin/certificate-fields', {
-    certificate_template_id: templateId,
-    field_name: field,
-    x: node.x(),
-    y: node.y(),
-    font_size: node.fontSize ? node.fontSize() : 24
+/* =========================
+   ACTIONS
+========================= */
+function addField() {
+  fields.value.push({
+    id: null,
+    field_name: 'custom_' + fields.value.length,
+    x: 300,
+    y: 200,
+    text: 'TEXT BARU',
+    fontSize: 24,
+    fill: '#000',
+    draggable: true
   })
 }
 
+function removeField(index) {
+  fields.value.splice(index, 1)
+}
+
+function updatePosition(index, e) {
+  const node = e.target
+  fields.value[index].x = node.x()
+  fields.value[index].y = node.y()
+}
+
+async function saveAll() {
+  try {
+    await axios.post('/admin/certificate-fields', {
+      template_id: templateId,
+      fields: fields.value.map(f => ({
+        id: f.id,
+        field_name: f.field_name,
+        x: f.x,
+        y: f.y,
+        fontSize: f.fontSize,
+        text: f.text
+      }))
+    })
+
+    router.visit(route('admin.certificate.templates.index'))
+
+  } catch (e) {
+    console.error(e)
+    alert('Gagal simpan')
+  }
+}
 </script>
 
 <template>
-<div class="p-4">
+    <Head :title="`Editor: ${template?.name || ''}`" />
 
-  <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">
-    Editor: {{ template.name }}
-  </h2>
+    <AuthenticatedLayout>
 
-  <v-stage :config="stageConfig">
+        <!-- HEADER -->
+        <template #header>
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                Editor: {{ template?.name }}
+            </h2>
+        </template>
 
-    <!-- BACKGROUND -->
-    <v-layer>
-      <v-image :config="bgConfig" />
-    </v-layer>
+        <!-- CONTENT -->
+        <div class="py-12">
+            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
 
-    <!-- TEXT -->
-    <v-layer>
+                <!-- TOOLBAR -->
+                <div class="mb-4 flex gap-2">
+                    <button
+                        @click="addField"
+                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                    >
+                        + Tambah Text
+                    </button>
 
-      <!-- NAME -->
-      <v-text
-        :config="nameText"
-        draggable
-        @dragend="updatePosition('name', $event)"
-      />
+                    <button
+                        @click="saveAll"
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                        💾 Simpan Semua
+                    </button>
+                </div>
 
-      <!-- EVENT -->
-      <v-text
-        :config="eventText"
-        draggable
-        @dragend="updatePosition('event', $event)"
-      />
+                <!-- CANVAS -->
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow overflow-auto">
+                    <v-stage :config="stageConfig">
 
-    </v-layer>
+                        <v-layer>
+                            <v-image :config="bgConfig" />
+                        </v-layer>
 
-  </v-stage>
+                        <v-layer>
+                            <v-text
+                                v-for="(field, index) in fields"
+                                :key="field.id ?? index"
+                                :config="field"
+                                draggable
+                                @dragend="updatePosition(index, $event)"
+                            />
+                        </v-layer>
 
-</div>
+                    </v-stage>
+                </div>
+
+                <!-- FIELD LIST -->
+                <div class="mt-4 space-y-2">
+                    <div
+                        v-for="(field, index) in fields"
+                        :key="field.id ?? index"
+                        class="flex items-center gap-2"
+                    >
+                        <input
+                            v-model="field.field_name"
+                            class="border border-gray-300 dark:border-gray-700
+                                   bg-white dark:bg-gray-900
+                                   text-gray-800 dark:text-gray-100
+                                   p-1 text-sm rounded"
+                        />
+
+                        <button
+                            @click="removeField(index)"
+                            class="text-red-500 text-sm"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </AuthenticatedLayout>
 </template>

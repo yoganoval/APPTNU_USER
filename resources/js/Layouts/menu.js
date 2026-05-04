@@ -28,7 +28,14 @@ export const menus = [
     {
         label: 'Certificate Template',
         icon: 'file-text',
-        href: '/admin/certificate-editor', // nanti route inertia
+        href: '/admin/certificate-templates', // nanti route inertia
         permission: 'certificate.view',
     },
+
+    {
+        label: 'Certificates',
+        icon: 'award',
+        href: route('admin.certificates.index'),
+        permission: 'certificate.generate',
+    }
 ]

@@ -1,14 +1,7 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3'
+import { useForm, Head } from '@inertiajs/vue3'
 import { computed } from 'vue'
-import AdminLayout from '@/Layouts/AuthenticatedLayout.vue'
-
-defineOptions({
-    layout: (h, page) => h(AdminLayout, {}, {
-        default: () => page,
-        header: () => 'Permission Management'
-    })
-})
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 defineProps({
     permissions: Array
@@ -31,14 +24,14 @@ const toggleAction = (value) => {
     }
 }
 
-// parse custom
+// custom input parsing
 const customList = computed(() => {
     return form.custom
         ? form.custom.split(',').map(p => p.trim()).filter(p => p)
         : []
 })
 
-// preview gabungan
+// preview permission
 const previewPermissions = computed(() => {
     let result = []
 
@@ -63,86 +56,105 @@ const submit = () => {
 </script>
 
 <template>
-<div class="bg-white dark:bg-gray-800 p-6 rounded shadow transition">
+    <Head title="Permission Management" />
 
-    <!-- MODULE -->
-    <input
-        v-model="form.module"
-        placeholder="Module (contoh: certificate)"
-        class="border border-gray-300 dark:border-gray-700
-               bg-white dark:bg-gray-900
-               text-gray-800 dark:text-gray-100
-               p-2 w-full mb-4 rounded
-               placeholder-gray-400 dark:placeholder-gray-500"
-    />
+    <AuthenticatedLayout>
 
-    <!-- CRUD -->
-    <div class="flex gap-4 mb-4 flex-wrap text-gray-800 dark:text-gray-200">
-        <label
-            v-for="a in actions"
-            :key="a"
-            class="flex items-center gap-2 cursor-pointer"
-        >
-            <input
-                type="checkbox"
-                :checked="form.actions.includes(a)"
-                @change="toggleAction(a)"
-                class="accent-blue-500"
-            />
-            {{ a }}
-        </label>
-    </div>
+        <!-- HEADER -->
+        <template #header>
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                Permission Management
+            </h2>
+        </template>
 
-    <!-- CUSTOM -->
-    <input
-        v-model="form.custom"
-        placeholder="Custom: certificate.pdf, laporan.print"
-        class="border border-gray-300 dark:border-gray-700
-               bg-white dark:bg-gray-900
-               text-gray-800 dark:text-gray-100
-               p-2 w-full mb-4 rounded
-               placeholder-gray-400 dark:placeholder-gray-500"
-    />
+        <!-- CONTENT -->
+        <div class="py-12">
+            <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
 
-    <!-- PREVIEW -->
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        <p>Preview:</p>
+                <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-100">
 
-        <div class="flex flex-wrap gap-2 mt-2">
-            <span
-                v-for="p in previewPermissions"
-                :key="p"
-                class="px-2 py-1 text-xs rounded
-                       bg-blue-100 text-blue-700
-                       dark:bg-blue-700 dark:text-white"
-            >
-                {{ p }}
-            </span>
+                        <!-- MODULE -->
+                        <input
+                            v-model="form.module"
+                            placeholder="Module (contoh: certificate)"
+                            class="border border-gray-300 dark:border-gray-700
+                                   bg-white dark:bg-gray-900
+                                   text-gray-800 dark:text-gray-100
+                                   p-2 w-full mb-4 rounded"
+                        />
+
+                        <!-- CRUD -->
+                        <div class="flex gap-4 mb-4 flex-wrap text-gray-800 dark:text-gray-200">
+                            <label
+                                v-for="a in actions"
+                                :key="a"
+                                class="flex items-center gap-2 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :checked="form.actions.includes(a)"
+                                    @change="toggleAction(a)"
+                                    class="accent-blue-500"
+                                />
+                                {{ a }}
+                            </label>
+                        </div>
+
+                        <!-- CUSTOM -->
+                        <input
+                            v-model="form.custom"
+                            placeholder="Custom: certificate.pdf, laporan.print"
+                            class="border border-gray-300 dark:border-gray-700
+                                   bg-white dark:bg-gray-900
+                                   text-gray-800 dark:text-gray-100
+                                   p-2 w-full mb-4 rounded"
+                        />
+
+                        <!-- PREVIEW -->
+                        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                            <p>Preview:</p>
+
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span
+                                    v-for="p in previewPermissions"
+                                    :key="p"
+                                    class="px-2 py-1 text-xs rounded
+                                           bg-blue-100 text-blue-700
+                                           dark:bg-blue-700 dark:text-white"
+                                >
+                                    {{ p }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- BUTTON -->
+                        <button
+                            @click="submit"
+                            class="bg-green-500 hover:bg-green-600
+                                   text-white px-4 py-2 rounded transition"
+                        >
+                            Simpan Permission
+                        </button>
+
+                        <!-- LIST -->
+                        <div class="mt-6 flex flex-wrap gap-2">
+                            <span
+                                v-for="p in permissions"
+                                :key="p.id"
+                                class="px-2 py-1 text-xs rounded
+                                       bg-gray-100 text-gray-700
+                                       dark:bg-gray-700 dark:text-gray-200"
+                            >
+                                {{ p.name }}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
         </div>
-    </div>
 
-    <!-- BUTTON -->
-    <button
-        @click="submit"
-        class="bg-green-500 hover:bg-green-600
-               text-white px-4 py-2 rounded
-               transition"
-    >
-        Simpan Permission
-    </button>
-
-    <!-- LIST -->
-    <div class="mt-6 flex flex-wrap gap-2">
-        <span
-            v-for="p in permissions"
-            :key="p.id"
-            class="px-2 py-1 text-xs rounded
-                   bg-gray-100 text-gray-700
-                   dark:bg-gray-700 dark:text-gray-200"
-        >
-            {{ p.name }}
-        </span>
-    </div>
-
-</div>
+    </AuthenticatedLayout>
 </template>

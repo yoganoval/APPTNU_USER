@@ -25,14 +25,15 @@ class CertificateTemplateController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'background' => 'required|image'
+            'background_image' => 'required|image'
         ]);
 
-        $path = $request->file('background')->store('certificates', 'public');
+        $path = $request->file('background_image')
+            ->store('certificates', 'public');
 
-        CertificateTemplate::create([
+        \App\Models\CertificateTemplate::create([
             'name' => $request->name,
-            'background' => $path
+            'background_image' => $path
         ]);
 
         return redirect()->route('admin.certificate.templates.index');

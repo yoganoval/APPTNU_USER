@@ -9,6 +9,7 @@ class CertificateField extends Model
     protected $fillable = [
         'certificate_template_id',
         'field_name',
+        'text', // ✅ WAJIB
         'x',
         'y',
         'font_size',
