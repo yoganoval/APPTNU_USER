@@ -12,60 +12,117 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // RESET CACHE SPATIE
+        // RESET CACHE
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // CLEAR DATA
         Permission::query()->delete();
         Role::query()->delete();
 
-        // =========================
-        // PERMISSIONS (MENU ACCESS)
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
+
         $permissions = [
+
+            // DASHBOARD
             'dashboard.view',
+
+            // USER
             'user.view',
             'user.create',
             'user.edit',
             'user.delete',
+
+            // ROLE
             'role.view',
-            'role.manage',
+            'role.create',
+            'role.edit',
+            'role.delete',
+
+            // PERMISSION
             'permission.view',
-            'permission.manage',
+            'permission.create',
+            'permission.edit',
+            'permission.delete',
+
+            // =====================
+            // CERTIFICATE SYSTEM 🔥
+            // =====================
+
+            // TEMPLATE
+            'certificate.template.view',
+            'certificate.template.create',
+            'certificate.template.edit',
+            'certificate.template.delete',
+
+            // EDIT FIELD
+            'certificate.edit',
+
+            // GENERATE
+            'certificate.generate',
         ];
 
         foreach ($permissions as $perm) {
-            Permission::create([
+            Permission::firstOrCreate([
                 'name' => $perm,
                 'guard_name' => 'web',
             ]);
         }
 
-        // =========================
-        // ROLES
-        // =========================
-        $admin = Role::create([
+        /*
+        |--------------------------------------------------------------------------
+        | ROLES
+        |--------------------------------------------------------------------------
+        */
+
+        $admin = Role::firstOrCreate([
             'name' => 'admin',
             'guard_name' => 'web',
         ]);
 
-        $anggota = Role::create([
+        $anggota = Role::firstOrCreate([
             'name' => 'anggota',
             'guard_name' => 'web',
         ]);
 
-        // =========================
-        // ASSIGN PERMISSIONS
-        // =========================
+        $panitia = Role::firstOrCreate([
+            'name' => 'panitia',
+            'guard_name' => 'web',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ASSIGN PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
+
+        // ADMIN → semua akses
         $admin->syncPermissions(Permission::all());
 
+        // PANITIA → fokus certificate
+        $panitia->syncPermissions([
+            'dashboard.view',
+            'certificate.template.view',
+            'certificate.template.create',
+            'certificate.template.edit',
+            'certificate.edit',
+            'certificate.generate',
+        ]);
+
+        // ANGGOTA → basic
         $anggota->syncPermissions([
             'dashboard.view',
         ]);
 
-        // =========================
-        // CREATE ADMIN USER
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN USER
+        |--------------------------------------------------------------------------
+        */
+
         $user = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [

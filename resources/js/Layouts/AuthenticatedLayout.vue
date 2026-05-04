@@ -38,8 +38,7 @@ const toggleDark = () => {
 </script>
 
 <template>
-<div class="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-
+<div class="flex h-screen overflow-x-hidden bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
     <!-- SIDEBAR -->
     <aside
         :class="sidebarOpen ? 'w-64' : 'w-20'"

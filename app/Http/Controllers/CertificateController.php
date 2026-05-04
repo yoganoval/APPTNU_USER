@@ -6,73 +6,54 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\Certificate;
 use App\Models\CertificateTemplate;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Inertia\Inertia;
 
 class CertificateController extends Controller
 {
-    // 📄 LIST EVENT (halaman certificates)
-    public function index()
+    public function show($id)
     {
-        $events = Event::all(); // bisa nanti difilter
+        $certificate = Certificate::with([
+            'user',
+            'event',
+            'template.fields'
+        ])->findOrFail($id);
 
-        return inertia('Certificate/Index', [
-            'events' => $events
+        return Inertia::render('Certificate/Show', [
+            'certificate' => $certificate
         ]);
     }
 
-    // 📥 DOWNLOAD CERTIFICATE
-    public function download($eventId)
+    public function generate($eventId)
     {
-        $user = auth()->user();
-        $event = Event::findOrFail($eventId);
+        $event = Event::with('users')->findOrFail($eventId);
 
-        // ✅ cek apakah user ikut & hadir
-        $isParticipant = $event->users()
-            ->where('user_id', $user->id)
-            ->wherePivot('attended', true)
-            ->exists();
-
-        if (!$isParticipant) {
-            abort(403, 'Tidak berhak mendapatkan sertifikat');
+        if ($event->users->isEmpty()) {
+            return back()->with('error', 'Tidak ada peserta');
         }
 
-        // ✅ ambil template + field
-        $template = CertificateTemplate::with('fields')->first();
+        // 🔥 Ambil template (sementara ambil pertama, tapi aman)
+        $template = CertificateTemplate::first();
 
         if (!$template) {
-            abort(404, 'Template tidak ditemukan');
+            return back()->with('error', 'Template belum tersedia');
         }
 
-        // ✅ nomor sertifikat
-        $certificateNumber = 'CERT-' . $event->id . '-' . $user->id;
+        foreach ($event->users as $user) {
 
-        // ✅ simpan ke database
-        Certificate::updateOrCreate(
-            [
+            // 🔥 Cegah duplicate
+            $exists = Certificate::where('user_id', $user->id)
+                ->where('event_id', $event->id)
+                ->exists();
+
+            if ($exists) continue;
+
+            Certificate::create([
                 'user_id' => $user->id,
                 'event_id' => $event->id,
-            ],
-            [
-                'certificate_number' => $certificateNumber,
-                'issued_at' => now(),
-            ]
-        );
+                'certificate_template_id' => $template->id,
+            ]);
+        }
 
-        // 🔥 DATA DINAMIS (INI YANG PENTING)
-        $data = [
-            'name'   => optional($user->anggota)->nama_perpustakaan ?? $user->email,
-            'event'  => $event->title,
-            'number' => $certificateNumber,
-            'date'   => now()->format('d M Y'),
-        ];
-
-        // ✅ GENERATE PDF
-        $pdf = Pdf::loadView('certificates.dynamic', [
-            'template' => $template,
-            'fields' => $template->fields,
-            'data' => $data
-        ])->setPaper([0, 0, $template->width, $template->height]);
-
-        return $pdf->download('certificate.pdf');
+        return back()->with('success', 'Sertifikat berhasil digenerate');
     }
 }

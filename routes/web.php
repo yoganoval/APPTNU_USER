@@ -7,8 +7,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
-
-// 🔥 TAMBAHKAN INI (biar tidak error class not found)
 use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateFieldController;
 use App\Http\Controllers\CertificateController;
@@ -53,7 +51,7 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| USER DOWNLOAD CERTIFICATE (PUBLIC / AUTH OPTIONAL)
+| PUBLIC DOWNLOAD CERTIFICATE
 |--------------------------------------------------------------------------
 */
 
@@ -73,48 +71,71 @@ Route::middleware(['auth', 'role:admin'])
 
         /*
         |------------------------------------------
-        | CERTIFICATE SYSTEM
+        | CERTIFICATE TEMPLATE
         |------------------------------------------
         */
 
-        // TEMPLATE
         Route::get('/certificate-templates', [CertificateTemplateController::class, 'index'])
-            ->name('certificate.templates.index');
-
-        Route::post('/certificate-templates', [CertificateTemplateController::class, 'store'])
-            ->name('certificate.templates.store');
+            ->name('certificate.templates.index')
+            ->middleware('permission:certificate.template.view');
 
         Route::get('/certificate-templates/create', [CertificateTemplateController::class, 'create'])
-            ->name('certificate.templates.create');
+            ->name('certificate.templates.create')
+            ->middleware('permission:certificate.template.create');
+
+        Route::post('/certificate-templates', [CertificateTemplateController::class, 'store'])
+            ->name('certificate.templates.store')
+            ->middleware('permission:certificate.template.create');
+
         Route::get('/certificate-templates/{id}', [CertificateTemplateController::class, 'show'])
-            ->name('certificate.templates.show');
+            ->name('certificate.templates.show')
+            ->middleware('permission:certificate.template.view');
 
-        // FIELD POSITION
-        Route::post('/certificate-fields', [CertificateFieldController::class, 'store'])
-            ->name('certificate.fields.store');
 
-        // EDITOR (🔥 FIXED — NO DOUBLE /admin)
+        /*
+        |------------------------------------------
+        | CERTIFICATE EDITOR (Canvas)
+        |------------------------------------------
+        */
+
         Route::get('/certificate-editor/{id}', [CertificateTemplateController::class, 'show'])
-            ->name('certificate.editor');
-
-        Route::get('/certificates', [CertificateController::class, 'index'])
-            ->name('certificates.index');
+            ->name('certificate.editor')
+            ->middleware('permission:certificate.template.view');
 
 
-        // 🔹 FIELD (yang tadi kamu buat)
+        /*
+        |------------------------------------------
+        | CERTIFICATE FIELD (Drag Position)
+        |------------------------------------------
+        */
+
         Route::post('/certificate-fields', [CertificateFieldController::class, 'store'])
+            ->name('certificate.fields.store')
             ->middleware('permission:certificate.edit');
 
-        // 🔹 GENERATE
+
+        /*
+        |------------------------------------------
+        | CERTIFICATE GENERATE & DOWNLOAD
+        |------------------------------------------
+        */
+
         Route::get('/certificates', [CertificateController::class, 'index'])
             ->name('certificates.index')
             ->middleware('permission:certificate.generate');
+
+        Route::get('/certificates/{id}', [CertificateController::class, 'show'])
+            ->name('certificates.show')
+            ->middleware('permissions:certivicate.index');
+
 
         Route::get('/certificates/download/{event}', [CertificateController::class, 'download'])
             ->name('certificates.download')
             ->middleware('permission:certificate.generate');
 
-
+        Route::post('/events/{id}/generate-certificate', [CertificateController::class, 'generate'])
+            ->name('certificates.generate')
+            ->middleware('permission:certificate.generate');
 
         /*
         |------------------------------------------
@@ -122,15 +143,19 @@ Route::middleware(['auth', 'role:admin'])
         |------------------------------------------
         */
 
-        Route::resource('users', UserController::class);
-        Route::resource('roles', RoleController::class);
-        Route::resource('permissions', PermissionController::class);
+        Route::resource('users', UserController::class)
+            ->middleware('permission:user.view');
 
+        Route::resource('roles', RoleController::class)
+            ->middleware('permission:role.view');
+
+        Route::resource('permissions', PermissionController::class)
+            ->middleware('permission:permission.view');
 });
 
 /*
 |--------------------------------------------------------------------------
-| AUTH ROUTES
+| AUTH
 |--------------------------------------------------------------------------
 */
 

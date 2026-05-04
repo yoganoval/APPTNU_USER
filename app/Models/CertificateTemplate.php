@@ -17,4 +17,10 @@ class CertificateTemplate extends Model
     {
         return $this->hasMany(CertificateField::class);
     }
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+
 }

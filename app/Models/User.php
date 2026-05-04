@@ -33,8 +33,17 @@ class User extends Authenticatable
         ];
     }
 
+    public function events()
+    {
+        return $this->belongsToMany(Event::class);
+    }
     public function anggota()
     {
         return $this->hasOne(Anggota::class);
     }
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
 }

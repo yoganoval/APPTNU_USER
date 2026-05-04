@@ -17,4 +17,10 @@ class Event extends Model
         return $this->belongsToMany(User::class)
             ->withPivot('attended');
     }
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+
 }

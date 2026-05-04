@@ -24,14 +24,15 @@ export const menus = [
         permission: 'permission.view',
     },
 
-    // 🔥 TAMBAHAN SERTIFIKAT
+    // 🔥 CERTIFICATE TEMPLATE (FIXED)
     {
         label: 'Certificate Template',
         icon: 'file-text',
-        href: '/admin/certificate-templates', // nanti route inertia
-        permission: 'certificate.view',
+        href: route('admin.certificate.templates.index'),
+        permission: 'certificate.template.view',
     },
 
+    // 🔥 CERTIFICATE GENERATE
     {
         label: 'Certificates',
         icon: 'award',

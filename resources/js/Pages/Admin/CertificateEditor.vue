@@ -9,18 +9,26 @@ const template = page.props.template ?? null
 const templateId = template?.id ?? null
 
 /* =========================
+   BASE SIZE
+========================= */
+const baseWidth = 1200
+const baseHeight = 800
+
+/* =========================
    CANVAS
 ========================= */
-const stageConfig = {
-  width: 1200,
-  height: 800
-}
+const stageConfig = ref({
+  width: 0,
+  height: 0
+})
+
+const scale = ref(1)
 
 const bgConfig = ref({
   x: 0,
   y: 0,
-  width: 1200,
-  height: 800,
+  width: 0,
+  height: 0,
   image: null
 })
 
@@ -30,9 +38,28 @@ const bgConfig = ref({
 const fields = ref([])
 
 /* =========================
-   LOAD DATA
+   LOAD DATA + RESIZE
 ========================= */
 onMounted(() => {
+
+  const resize = () => {
+    const container = document.querySelector('.max-w-7xl')
+    const containerWidth = container?.clientWidth || window.innerWidth
+
+    const width = Math.min(containerWidth - 20, window.innerWidth - 20)
+    scale.value = width / baseWidth
+
+    stageConfig.value.width = width
+    stageConfig.value.height = baseHeight * scale.value
+
+    bgConfig.value.width = stageConfig.value.width
+    bgConfig.value.height = stageConfig.value.height
+  }
+
+  window.addEventListener('resize', resize)
+  resize()
+
+  // LOAD TEMPLATE
   if (!template) return
 
   const image = new window.Image()
@@ -45,24 +72,17 @@ onMounted(() => {
     fields.value = template.fields.map(f => ({
       id: f.id,
       field_name: f.field_name,
+      text: f.text,
+      type: f.type,
       x: f.x,
       y: f.y,
-      text: f.text || f.field_name,
       fontSize: f.font_size || 24,
-      fill: '#000',
+      fontColor: f.font_color || '#000000',
+      fontWeight: f.font_weight || 'normal',
       draggable: true
     }))
   }
 })
-
-/* =========================
-   SYNC TEXT
-========================= */
-watch(fields, (newFields) => {
-  newFields.forEach(f => {
-    f.text = f.field_name
-  })
-}, { deep: true })
 
 /* =========================
    ACTIONS
@@ -70,12 +90,14 @@ watch(fields, (newFields) => {
 function addField() {
   fields.value.push({
     id: null,
-    field_name: 'custom_' + fields.value.length,
+    field_name: null,
+    text: 'TEXT BARU',
+    type: 'static',
     x: 300,
     y: 200,
-    text: 'TEXT BARU',
     fontSize: 24,
-    fill: '#000',
+    fontColor: '#000000',
+    fontWeight: 'normal',
     draggable: true
   })
 }
@@ -86,8 +108,9 @@ function removeField(index) {
 
 function updatePosition(index, e) {
   const node = e.target
-  fields.value[index].x = node.x()
-  fields.value[index].y = node.y()
+
+  fields.value[index].x = node.x() / scale.value
+  fields.value[index].y = node.y() / scale.value
 }
 
 async function saveAll() {
@@ -97,10 +120,13 @@ async function saveAll() {
       fields: fields.value.map(f => ({
         id: f.id,
         field_name: f.field_name,
+        text: f.text,
+        type: f.field_name ? 'dynamic' : 'static',
         x: f.x,
         y: f.y,
         fontSize: f.fontSize,
-        text: f.text
+        fontColor: f.fontColor,
+        fontWeight: f.fontWeight
       }))
     })
 
@@ -112,6 +138,8 @@ async function saveAll() {
   }
 }
 </script>
+
+
 
 <template>
     <Head :title="`Editor: ${template?.name || ''}`" />
@@ -127,7 +155,7 @@ async function saveAll() {
 
         <!-- CONTENT -->
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div class="mx-auto w-full max-w-7xl px-4">
 
                 <!-- TOOLBAR -->
                 <div class="mb-4 flex gap-2">
@@ -147,20 +175,36 @@ async function saveAll() {
                 </div>
 
                 <!-- CANVAS -->
-                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow overflow-auto">
-                    <v-stage :config="stageConfig">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded shadow overflow-hidden flex justify-center">
+                    <v-stage :config="{
+                      width: stageConfig.width,
+                      height: stageConfig.height,
+                      scaleX: scale,
+                      scaleY: scale
+                    }">
 
                         <v-layer>
-                            <v-image :config="bgConfig" />
+                            <v-image :config="{
+                              ...bgConfig,
+                              width: stageConfig.width,
+                              height: stageConfig.height
+                            }" />
                         </v-layer>
 
                         <v-layer>
                             <v-text
-                                v-for="(field, index) in fields"
-                                :key="field.id ?? index"
-                                :config="field"
-                                draggable
-                                @dragend="updatePosition(index, $event)"
+                              v-for="(field, index) in fields"
+                              :key="field.id ?? index"
+                              :config="{
+                                text: field.text || field.field_name,
+                                x: field.x * scale,
+                                y: field.y * scale,
+                                fontSize: field.fontSize * scale,
+                                fill: field.fontColor,
+                                fontStyle: field.fontWeight === 'bold' ? 'bold' : 'normal'
+                              }"
+                              draggable
+                              @dragend="updatePosition(index, $event)"
                             />
                         </v-layer>
 
