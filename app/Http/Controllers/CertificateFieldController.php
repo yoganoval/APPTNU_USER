@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CertificateField;
+use App\Models\CertificateTemplate;
+use Inertia\Inertia;
 
 class CertificateFieldController extends Controller
 {
@@ -49,4 +51,15 @@ class CertificateFieldController extends Controller
             'message' => 'Field berhasil disimpan'
         ]);
     }
+
+    public function edit($id)
+    {
+        $template = CertificateTemplate::with('fields')
+            ->findOrFail($id);
+
+        return Inertia::render('Certificate/Edit', [
+            'template' => $template
+        ]);
+    }
+
 }

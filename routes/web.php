@@ -90,7 +90,8 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/certificate-templates/{id}', [CertificateTemplateController::class, 'show'])
             ->name('certificate.templates.show')
             ->middleware('permission:certificate.template.view');
-
+        // Route::get('/certificate-template/{id}/edit',[CertificateTemplateController::class, 'edit'])
+        // ->name('certificate-template.edit');
 
         /*
         |------------------------------------------

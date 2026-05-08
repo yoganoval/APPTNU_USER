@@ -10,6 +10,19 @@ use Inertia\Inertia;
 
 class CertificateController extends Controller
 {
+    public function index()
+    {
+        $certificates = Certificate::with([
+            'user',
+            'event',
+            'template'
+        ])->latest()->get();
+
+        return Inertia::render('Certificate/Index', [
+            'certificates' => $certificates
+        ]);
+    }
+
     public function show($id)
     {
         $certificate = Certificate::with([
@@ -31,7 +44,6 @@ class CertificateController extends Controller
             return back()->with('error', 'Tidak ada peserta');
         }
 
-        // 🔥 Ambil template (sementara ambil pertama, tapi aman)
         $template = CertificateTemplate::first();
 
         if (!$template) {
@@ -40,7 +52,6 @@ class CertificateController extends Controller
 
         foreach ($event->users as $user) {
 
-            // 🔥 Cegah duplicate
             $exists = Certificate::where('user_id', $user->id)
                 ->where('event_id', $event->id)
                 ->exists();

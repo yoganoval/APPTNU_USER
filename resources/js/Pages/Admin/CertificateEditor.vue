@@ -1,12 +1,16 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { usePage, router, Head } from '@inertiajs/vue3'
 import axios from 'axios'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const page = usePage()
-const template = page.props.template ?? null
-const templateId = template?.id ?? null
+
+/* =========================
+   TEMPLATE
+========================= */
+const template = page.props.template || {}
+const templateId = template?.id || null
 
 /* =========================
    BASE SIZE
@@ -18,18 +22,18 @@ const baseHeight = 800
    CANVAS
 ========================= */
 const stageConfig = ref({
-  width: 0,
-  height: 0
+    width: 0,
+    height: 0
 })
 
 const scale = ref(1)
 
 const bgConfig = ref({
-  x: 0,
-  y: 0,
-  width: 0,
-  height: 0,
-  image: null
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    image: null
 })
 
 /* =========================
@@ -38,122 +42,181 @@ const bgConfig = ref({
 const fields = ref([])
 
 /* =========================
-   LOAD DATA + RESIZE
+   LOAD DATA
 ========================= */
 onMounted(() => {
 
-  const resize = () => {
-    const container = document.querySelector('.max-w-7xl')
-    const containerWidth = container?.clientWidth || window.innerWidth
+    /* RESIZE */
+    const resize = () => {
 
-    const width = Math.min(containerWidth - 20, window.innerWidth - 20)
-    scale.value = width / baseWidth
+        const container = document.querySelector('.max-w-7xl')
 
-    stageConfig.value.width = width
-    stageConfig.value.height = baseHeight * scale.value
+        const containerWidth =
+            container?.clientWidth || window.innerWidth
 
-    bgConfig.value.width = stageConfig.value.width
-    bgConfig.value.height = stageConfig.value.height
-  }
+        const width = Math.min(
+            containerWidth - 20,
+            window.innerWidth - 20
+        )
 
-  window.addEventListener('resize', resize)
-  resize()
+        scale.value = width / baseWidth
 
-  // LOAD TEMPLATE
-  if (!template) return
+        stageConfig.value.width = width
 
-  const image = new window.Image()
-  image.src = `/storage/${template.background_image}`
-  image.onload = () => {
-    bgConfig.value.image = image
-  }
+        stageConfig.value.height =
+            baseHeight * scale.value
 
+        bgConfig.value.width =
+            stageConfig.value.width
+
+        bgConfig.value.height =
+            stageConfig.value.height
+    }
+
+    window.addEventListener('resize', resize)
+
+    resize()
+
+    /* TEMPLATE CHECK */
+    if (!templateId) return
+
+    /* LOAD IMAGE */
+    const image = new window.Image()
+
+    image.src = `/storage/${template.background_image}`
+
+    image.onload = () => {
+        bgConfig.value.image = image
+    }
+
+    /* LOAD FIELDS */
   if (template.fields && template.fields.length) {
-    fields.value = template.fields.map(f => ({
-      id: f.id,
-      field_name: f.field_name,
-      text: f.text,
-      type: f.type,
-      x: f.x,
-      y: f.y,
-      fontSize: f.font_size || 24,
-      fontColor: f.font_color || '#000000',
-      fontWeight: f.font_weight || 'normal',
-      draggable: true
-    }))
+
+      fields.value = template.fields.map(f => ({
+          id: f.id,
+
+          field_name: f.field_name || '',
+
+          text: f.text || '',
+
+          type: f.type || (
+              f.field_name
+                  ? 'dynamic'
+                  : 'static'
+          ),
+
+          x: f.x || 0,
+          y: f.y || 0,
+
+          fontSize: f.font_size || 24,
+
+          fontColor:
+              f.font_color || '#000000',
+
+          fontWeight:
+              f.font_weight || 'normal',
+
+          draggable: true
+      }))
   }
 })
 
 /* =========================
-   ACTIONS
+   ADD FIELD
 ========================= */
 function addField() {
-  fields.value.push({
-    id: null,
-    field_name: null,
-    text: 'TEXT BARU',
-    type: 'static',
-    x: 300,
-    y: 200,
-    fontSize: 24,
-    fontColor: '#000000',
-    fontWeight: 'normal',
-    draggable: true
-  })
-}
 
-function removeField(index) {
-  fields.value.splice(index, 1)
-}
+    fields.value.push({
+        id: null,
+        field_name: '',
+        text: 'TEXT BARU',
+        type: 'static',
 
-function updatePosition(index, e) {
-  const node = e.target
+        x: 300,
+        y: 200,
 
-  fields.value[index].x = node.x() / scale.value
-  fields.value[index].y = node.y() / scale.value
-}
+        fontSize: 24,
+        fontColor: '#000000',
+        fontWeight: 'normal',
 
-async function saveAll() {
-  try {
-    await axios.post('/admin/certificate-fields', {
-      template_id: templateId,
-      fields: fields.value.map(f => ({
-        id: f.id,
-        field_name: f.field_name,
-        text: f.text,
-        type: f.field_name ? 'dynamic' : 'static',
-        x: f.x,
-        y: f.y,
-        fontSize: f.fontSize,
-        fontColor: f.fontColor,
-        fontWeight: f.fontWeight
-      }))
+        draggable: true
     })
-
-    router.visit(route('admin.certificate.templates.index'))
-
-  } catch (e) {
-    console.error(e)
-    alert('Gagal simpan')
-  }
 }
 
+/* =========================
+   REMOVE FIELD
+========================= */
+function removeField(index) {
+    fields.value.splice(index, 1)
+}
 
+/* =========================
+   UPDATE POSITION
+========================= */
+function updatePosition(index, e) {
 
-fields.value = template.fields.map(f => ({
-  id: f.id,
-  field_name: f.field_name || '',
-  text: f.text || '',
-  type: f.type || (f.field_name ? 'dynamic' : 'static'),
-  x: f.x,
-  y: f.y,
-  fontSize: f.font_size || 24,
-  fontColor: f.font_color || '#000000',
-  fontWeight: f.font_weight || 'normal',
-  draggable: true
-}))
+    const node = e.target
+
+    fields.value[index].x = node.x()
+
+    fields.value[index].y = node.y()
+}
+
+/* =========================
+   SAVE
+========================= */
+async function saveAll() {
+
+    try {
+
+        await axios.post(
+            '/admin/certificate-fields',
+            {
+                template_id: templateId,
+
+                fields: fields.value.map(f => ({
+                    id: f.id,
+
+                    field_name:
+                        f.type === 'dynamic'
+                            ? f.field_name
+                            : null,
+
+                    text:
+                        f.type === 'static'
+                            ? f.text
+                            : null,
+
+                    type: f.type,
+
+                    x: f.x,
+                    y: f.y,
+
+                    fontSize: f.fontSize,
+
+                    fontColor: f.fontColor,
+
+                    fontWeight: f.fontWeight
+                }))
+            }
+        )
+
+        alert('Berhasil disimpan')
+
+        router.visit(
+            route(
+                'admin.certificate.templates.index'
+            )
+        )
+
+    } catch (e) {
+
+        console.error(e)
+
+        alert('Gagal simpan')
+    }
+}
 </script>
-
 
 
 <template>
@@ -219,7 +282,8 @@ fields.value = template.fields.map(f => ({
                               fontSize: field.fontSize,
                               fill: field.fontColor,
                               fontStyle: field.fontWeight === 'bold' ? 'bold' : 'normal',
-                              draggable: true
+                              draggable: true,
+                              dragBoundFunc: (pos) => pos
                             }"
                             @dragmove="updatePosition(index, $event)"
                             @dragend="updatePosition(index, $event)"
