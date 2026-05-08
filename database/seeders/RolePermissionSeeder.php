@@ -88,10 +88,6 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
-        $panitia = Role::firstOrCreate([
-            'name' => 'panitia',
-            'guard_name' => 'web',
-        ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -101,16 +97,6 @@ class RolePermissionSeeder extends Seeder
 
         // ADMIN → semua akses
         $admin->syncPermissions(Permission::all());
-
-        // PANITIA → fokus certificate
-        $panitia->syncPermissions([
-            'dashboard.view',
-            'certificate.template.view',
-            'certificate.template.create',
-            'certificate.template.edit',
-            'certificate.edit',
-            'certificate.generate',
-        ]);
 
         // ANGGOTA → basic
         $anggota->syncPermissions([

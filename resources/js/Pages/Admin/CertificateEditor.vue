@@ -137,6 +137,21 @@ async function saveAll() {
     alert('Gagal simpan')
   }
 }
+
+
+
+fields.value = template.fields.map(f => ({
+  id: f.id,
+  field_name: f.field_name || '',
+  text: f.text || '',
+  type: f.type || (f.field_name ? 'dynamic' : 'static'),
+  x: f.x,
+  y: f.y,
+  fontSize: f.font_size || 24,
+  fontColor: f.font_color || '#000000',
+  fontWeight: f.font_weight || 'normal',
+  draggable: true
+}))
 </script>
 
 
@@ -192,47 +207,64 @@ async function saveAll() {
                         </v-layer>
 
                         <v-layer>
-                            <v-text
-                              v-for="(field, index) in fields"
-                              :key="field.id ?? index"
-                              :config="{
-                                text: field.text || field.field_name,
-                                x: field.x * scale,
-                                y: field.y * scale,
-                                fontSize: field.fontSize * scale,
-                                fill: field.fontColor,
-                                fontStyle: field.fontWeight === 'bold' ? 'bold' : 'normal'
-                              }"
-                              draggable
-                              @dragend="updatePosition(index, $event)"
-                            />
+                          <v-text
+                            v-for="(field, index) in fields"
+                            :key="field.id ?? index"
+                            :config="{
+                              text: field.type === 'dynamic'
+                                ? `{${field.field_name || 'field'}}`
+                                : field.text,
+                              x: field.x,
+                              y: field.y,
+                              fontSize: field.fontSize,
+                              fill: field.fontColor,
+                              fontStyle: field.fontWeight === 'bold' ? 'bold' : 'normal',
+                              draggable: true
+                            }"
+                            @dragmove="updatePosition(index, $event)"
+                            @dragend="updatePosition(index, $event)"
+                          />
                         </v-layer>
 
                     </v-stage>
                 </div>
 
                 <!-- FIELD LIST -->
-                <div class="mt-4 space-y-2">
-                    <div
-                        v-for="(field, index) in fields"
-                        :key="field.id ?? index"
-                        class="flex items-center gap-2"
-                    >
-                        <input
-                            v-model="field.field_name"
-                            class="border border-gray-300 dark:border-gray-700
-                                   bg-white dark:bg-gray-900
-                                   text-gray-800 dark:text-gray-100
-                                   p-1 text-sm rounded"
-                        />
+                <div
+                  v-for="(field, index) in fields"
+                  :key="field.id ?? index"
+                  class="flex items-center gap-2"
+                >
 
-                        <button
-                            @click="removeField(index)"
-                            class="text-red-500 text-sm"
-                        >
-                            Hapus
-                        </button>
-                    </div>
+                  <!-- PILIH TIPE -->
+                  <select v-model="field.type" class="text-sm border rounded p-1">
+                    <option value="static">Static</option>
+                    <option value="dynamic">Dynamic</option>
+                  </select>
+
+                  <!-- INPUT STATIC -->
+                  <input
+                    v-if="field.type === 'static'"
+                    v-model="field.text"
+                    placeholder="Teks statis"
+                    class="border p-1 text-sm rounded"
+                  />
+
+                  <!-- INPUT DYNAMIC -->
+                  <input
+                    v-else
+                    v-model="field.field_name"
+                    placeholder="contoh: nama / tanggal"
+                    class="border p-1 text-sm rounded"
+                  />
+
+                  <button
+                    @click="removeField(index)"
+                    class="text-red-500 text-sm"
+                  >
+                    Hapus
+                  </button>
+
                 </div>
 
             </div>
