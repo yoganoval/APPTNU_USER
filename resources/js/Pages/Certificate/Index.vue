@@ -1,338 +1,120 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import axios from 'axios'
 
-const props = defineProps({
-    template: Object
+defineProps({
+    certificates: Array
 })
-
-/* =========================
-   TEMPLATE
-========================= */
-const template = props.template || {}
-
-/* =========================
-   STAGE
-========================= */
-const stageConfig = {
-    width: 1200,
-    height: 850
-}
-
-const scale = ref(1)
-
-/* =========================
-   BACKGROUND IMAGE
-========================= */
-const bgImage = ref(null)
-
-const bgConfig = ref({
-    image: null
-})
-
-onMounted(() => {
-
-    // LOAD BACKGROUND
-    const image = new window.Image()
-
-    image.src = `/storage/${template.background}`
-
-    image.onload = () => {
-        bgImage.value = image
-
-        bgConfig.value = {
-            image: image
-        }
-    }
-})
-
-/* =========================
-   FIELDS
-========================= */
-const fields = ref(template.fields || [])
-
-/* =========================
-   ADD FIELD
-========================= */
-const addField = () => {
-    fields.value.push({
-        type: 'static',
-        text: 'TEXT BARU',
-        field_name: '',
-        x: 100,
-        y: 100,
-        fontSize: 28,
-        fontColor: '#000000',
-        fontWeight: 'normal'
-    })
-}
-
-/* =========================
-   REMOVE FIELD
-========================= */
-const removeField = (index) => {
-    fields.value.splice(index, 1)
-}
-
-/* =========================
-   UPDATE POSITION
-========================= */
-const updatePosition = (index, e) => {
-    fields.value[index].x = e.target.x()
-    fields.value[index].y = e.target.y()
-}
-
-/* =========================
-   SAVE
-========================= */
-const saveAll = async () => {
-
-    try {
-
-        await axios.post('/certificate-fields', {
-            template_id: template.id,
-            fields: fields.value
-        })
-
-        alert('Berhasil disimpan')
-
-    } catch (error) {
-
-        console.log(error)
-
-        alert('Gagal menyimpan')
-    }
-}
 </script>
 
 <template>
-    <Head :title="`Editor: ${template?.name}`" />
+    <Head title="Certificates" />
 
     <AuthenticatedLayout>
 
-        <!-- HEADER -->
         <template #header>
             <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
-                Editor: {{ template?.name }}
+                Certificates
             </h2>
         </template>
 
         <div class="py-8">
-
             <div class="max-w-7xl mx-auto px-4">
 
-                <!-- TOOLBAR -->
-                <div class="mb-4 flex gap-2">
+                <div class="bg-white dark:bg-gray-800 rounded shadow overflow-hidden">
 
-                    <button
-                        @click="addField"
-                        class="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-600"
-                    >
-                        + Tambah Text
-                    </button>
+                    <table class="w-full text-sm">
 
-                    <button
-                        @click="saveAll"
-                        class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
-                    >
-                        💾 Simpan Semua
-                    </button>
+                        <thead class="bg-gray-100 dark:bg-gray-700">
 
-                </div>
+                            <tr>
+                                <th class="p-3 text-left">
+                                    Peserta
+                                </th>
 
-                <!-- CANVAS -->
-                <div class="bg-white dark:bg-gray-800 rounded shadow p-4 overflow-auto">
+                                <th class="p-3 text-left">
+                                    Event
+                                </th>
 
-                    <div class="flex justify-center">
+                                <th class="p-3 text-left">
+                                    Template
+                                </th>
 
-                        <v-stage
-                            :config="{
-                                width: stageConfig.width,
-                                height: stageConfig.height,
-                                scaleX: scale,
-                                scaleY: scale
-                            }"
-                        >
+                                <th class="p-3 text-left">
+                                    Action
+                                </th>
+                            </tr>
 
-                            <!-- BACKGROUND -->
-                            <v-layer>
+                        </thead>
 
-                                <v-image
-                                    :config="{
-                                        ...bgConfig,
-                                        width: stageConfig.width,
-                                        height: stageConfig.height
-                                    }"
-                                />
+                        <tbody>
 
-                            </v-layer>
+                            <tr
+                                v-for="certificate in certificates"
+                                :key="certificate.id"
+                                class="border-t dark:border-gray-700"
+                            >
 
-                            <!-- TEXT -->
-                            <v-layer>
+                                <td class="p-3">
+                                    {{ certificate.user?.name }}
+                                </td>
 
-                                <v-text
-                                    v-for="(field, index) in fields"
-                                    :key="field.id || index"
-                                    :config="{
-                                        text: field.type === 'dynamic'
-                                            ? `{${field.field_name || 'field'}}`
-                                            : field.text,
+                                <td class="p-3">
+                                    {{ certificate.event?.name }}
+                                </td>
 
-                                        x: field.x,
-                                        y: field.y,
+                                <td class="p-3">
+                                    {{ certificate.template?.name }}
+                                </td>
 
-                                        fontSize: field.fontSize || 24,
+                                <td class="p-3 flex gap-2">
 
-                                        fill: field.fontColor || '#000000',
+                                    <!-- VIEW -->
+                                    <Link
+                                        :href="route(
+                                            'certificates.show',
+                                            certificate.id
+                                        )"
 
-                                        fontStyle: field.fontWeight === 'bold'
-                                            ? 'bold'
-                                            : 'normal',
+                                        class="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                                    >
+                                        View
+                                    </Link>
 
-                                        draggable: true
-                                    }"
+                                    <!-- DOWNLOAD -->
+                                    <a
+                                        :href="route(
+                                            'certificates.download',
+                                            certificate.id
+                                        )"
 
-                                    @dragmove="updatePosition(index, $event)"
-                                    @dragend="updatePosition(index, $event)"
-                                />
+                                        class="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600"
+                                    >
+                                        Download
+                                    </a>
 
-                            </v-layer>
+                                </td>
 
-                        </v-stage>
+                            </tr>
 
-                    </div>
+                            <tr v-if="!certificates.length">
 
-                </div>
-
-                <!-- FIELD SETTINGS -->
-                <div class="mt-6 space-y-4">
-
-                    <div
-                        v-for="(field, index) in fields"
-                        :key="field.id || index"
-                        class="bg-white dark:bg-gray-800 rounded shadow p-4"
-                    >
-
-                        <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
-
-                            <!-- TYPE -->
-                            <div>
-                                <label class="text-sm block mb-1">
-                                    Type
-                                </label>
-
-                                <select
-                                    v-model="field.type"
-                                    class="w-full border rounded p-2 text-sm"
+                                <td
+                                    colspan="4"
+                                    class="p-6 text-center text-gray-500"
                                 >
-                                    <option value="static">
-                                        Static
-                                    </option>
+                                    Belum ada sertifikat
+                                </td>
 
-                                    <option value="dynamic">
-                                        Dynamic
-                                    </option>
-                                </select>
-                            </div>
+                            </tr>
 
-                            <!-- TEXT -->
-                            <div v-if="field.type === 'static'">
-                                <label class="text-sm block mb-1">
-                                    Text
-                                </label>
+                        </tbody>
 
-                                <input
-                                    v-model="field.text"
-                                    type="text"
-                                    class="w-full border rounded p-2 text-sm"
-                                />
-                            </div>
-
-                            <!-- FIELD -->
-                            <div v-else>
-                                <label class="text-sm block mb-1">
-                                    Field
-                                </label>
-
-                                <select
-                                    v-model="field.field_name"
-                                    class="w-full border rounded p-2 text-sm"
-                                >
-                                    <option value="nama">Nama</option>
-                                    <option value="event">Event</option>
-                                    <option value="tanggal">Tanggal</option>
-                                    <option value="nomor">Nomor</option>
-                                </select>
-                            </div>
-
-                            <!-- FONT SIZE -->
-                            <div>
-                                <label class="text-sm block mb-1">
-                                    Font Size
-                                </label>
-
-                                <input
-                                    v-model="field.fontSize"
-                                    type="number"
-                                    class="w-full border rounded p-2 text-sm"
-                                />
-                            </div>
-
-                            <!-- COLOR -->
-                            <div>
-                                <label class="text-sm block mb-1">
-                                    Color
-                                </label>
-
-                                <input
-                                    v-model="field.fontColor"
-                                    type="color"
-                                    class="w-full h-10 border rounded"
-                                />
-                            </div>
-
-                            <!-- WEIGHT -->
-                            <div>
-                                <label class="text-sm block mb-1">
-                                    Weight
-                                </label>
-
-                                <select
-                                    v-model="field.fontWeight"
-                                    class="w-full border rounded p-2 text-sm"
-                                >
-                                    <option value="normal">
-                                        Normal
-                                    </option>
-
-                                    <option value="bold">
-                                        Bold
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- DELETE -->
-                            <div class="flex items-end">
-
-                                <button
-                                    @click="removeField(index)"
-                                    class="px-3 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-                                >
-                                    Hapus
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                    </table>
 
                 </div>
 
             </div>
-
         </div>
 
     </AuthenticatedLayout>

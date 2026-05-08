@@ -16,8 +16,9 @@ class CertificateController extends Controller
             'user',
             'event',
             'template'
-        ])->latest()->get();
-
+            ])->latest()->get();
+            
+            // dd($certificates);
         return Inertia::render('Certificate/Index', [
             'certificates' => $certificates
         ]);
@@ -36,35 +37,82 @@ class CertificateController extends Controller
         ]);
     }
 
+    // public function generate($eventId)
+    // {
+    //     $event = Event::with('users')->findOrFail($eventId);
+
+    //     if ($event->users->isEmpty()) {
+    //         return back()->with('error', 'Tidak ada peserta');
+    //     }
+
+    //     $template = CertificateTemplate::first();
+
+    //     if (!$template) {
+    //         return back()->with('error', 'Template belum tersedia');
+    //     }
+
+    //     foreach ($event->users as $user) {
+
+    //         $exists = Certificate::where('user_id', $user->id)
+    //             ->where('event_id', $event->id)
+    //             ->exists();
+
+    //         if ($exists) continue;
+
+    //         Certificate::create([
+    //             'user_id' => $user->id,
+    //             'event_id' => $event->id,
+    //             'certificate_template_id' => $template->id,
+    //         ]);
+    //     }
+
+    //     return back()->with('success', 'Sertifikat berhasil digenerate');
+    // }
+
     public function generate($eventId)
     {
         $event = Event::with('users')->findOrFail($eventId);
 
         if ($event->users->isEmpty()) {
-            return back()->with('error', 'Tidak ada peserta');
+            return back()->with(
+                'error',
+                'Tidak ada peserta'
+            );
         }
 
         $template = CertificateTemplate::first();
 
         if (!$template) {
-            return back()->with('error', 'Template belum tersedia');
+            return back()->with(
+                'error',
+                'Template belum tersedia'
+            );
         }
 
         foreach ($event->users as $user) {
 
-            $exists = Certificate::where('user_id', $user->id)
-                ->where('event_id', $event->id)
-                ->exists();
+            $exists = Certificate::where(
+                'user_id',
+                $user->id
+            )
+            ->where('event_id', $event->id)
+            ->exists();
 
             if ($exists) continue;
 
             Certificate::create([
                 'user_id' => $user->id,
+
                 'event_id' => $event->id,
-                'certificate_template_id' => $template->id,
+
+                'certificate_template_id'
+                    => $template->id,
             ]);
         }
 
-        return back()->with('success', 'Sertifikat berhasil digenerate');
+        return back()->with(
+            'success',
+            'Sertifikat berhasil digenerate'
+        );
     }
 }

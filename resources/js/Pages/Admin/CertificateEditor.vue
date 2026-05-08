@@ -315,12 +315,29 @@ async function saveAll() {
                   />
 
                   <!-- INPUT DYNAMIC -->
-                  <input
+                  <select
                     v-else
                     v-model="field.field_name"
-                    placeholder="contoh: nama / tanggal"
                     class="border p-1 text-sm rounded"
-                  />
+                  >
+                      <option value="">Pilih Field</option>
+
+                      <option value="nama">
+                          Nama Peserta
+                      </option>
+
+                      <option value="event">
+                          Nama Event
+                      </option>
+
+                      <option value="tanggal">
+                          Tanggal Event
+                      </option>
+
+                      <option value="nomor">
+                          Nomor Sertifikat
+                      </option>
+                  </select>
 
                   <button
                     @click="removeField(index)"

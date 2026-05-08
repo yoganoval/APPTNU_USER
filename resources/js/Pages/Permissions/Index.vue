@@ -8,7 +8,7 @@ defineProps({
 })
 
 // CRUD
-const actions = ['view', 'create', 'edit', 'delete']
+const actions = ['index', 'view', 'create', 'edit', 'delete']
 
 const form = useForm({
     module: '',

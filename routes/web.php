@@ -10,6 +10,8 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateFieldController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\EventController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -138,6 +140,9 @@ Route::middleware(['auth', 'role:admin'])
             ->name('certificates.generate')
             ->middleware('permission:certificate.generate');
 
+
+            // Route::post('/events/{event}/generate-certificates',[CertificateController::class, 'generate']
+            // )->name('admin.certificates.generate');
         /*
         |------------------------------------------
         | RBAC (USER / ROLE / PERMISSION)
@@ -152,6 +157,12 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('permissions', PermissionController::class)
             ->middleware('permission:permission.view');
+
+
+
+        Route::resource('events', EventController::class)
+        ->middleware('permission:event.view');
+
 });
 
 /*

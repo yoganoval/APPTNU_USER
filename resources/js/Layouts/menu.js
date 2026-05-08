@@ -38,5 +38,14 @@ export const menus = [
         icon: 'award',
         href: route('admin.certificates.index'),
         permission: 'certificate.generate',
+    },
+    // 🔥 CERTIFICATE EVENT
+    {
+        label: 'Events',
+        icon: 'calendar',
+        href: route('admin.events.index'),
+        permission: 'event.index',
     }
+
+
 ]
