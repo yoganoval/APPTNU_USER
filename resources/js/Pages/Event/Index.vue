@@ -58,7 +58,6 @@ defineProps({
                                 </td>
 
                                 <td class="p-3 flex gap-2">
-                                    <!-- Edit -->
                                     <Link
                                         :href="route('admin.events.edit', event.id)"
                                         class="bg-yellow-500 text-white px-3 py-1 rounded"
@@ -66,7 +65,13 @@ defineProps({
                                         Edit
                                     </Link>
 
-                                    <!-- Generate Sertifikat -->
+                                    <Link
+                                        :href="route('admin.events.attendance', event.id)"
+                                        class="bg-indigo-500 text-white px-3 py-1 rounded"
+                                    >
+                                        Absensi
+                                    </Link>
+
                                     <Link
                                         :href="route('admin.certificates.generate', event.id)"
                                         method="post"
@@ -76,7 +81,6 @@ defineProps({
                                         Generate Sertifikat
                                     </Link>
 
-                                    <!-- Delete -->
                                     <Link
                                         :href="route('admin.events.destroy', event.id)"
                                         method="delete"

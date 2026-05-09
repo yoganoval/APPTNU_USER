@@ -41,7 +41,10 @@ const submit = () => {
                         <input
                             v-model="form.title"
                             type="text"
-                            class="w-full border rounded p-2"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded p-2
+                                bg-white dark:bg-gray-700
+                                text-gray-900 dark:text-white
+                                focus:ring-2 focus:ring-blue-500"
                         />
 
                         <div
@@ -61,7 +64,10 @@ const submit = () => {
                         <textarea
                             v-model="form.description"
                             rows="4"
-                            class="w-full border rounded p-2"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded p-2
+                                bg-white dark:bg-gray-700
+                                text-gray-900 dark:text-white
+                                focus:ring-2 focus:ring-blue-500"
                         ></textarea>
 
                         <div
@@ -81,7 +87,10 @@ const submit = () => {
                         <input
                             v-model="form.date"
                             type="date"
-                            class="w-full border rounded p-2"
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded p-2
+                                bg-white dark:bg-gray-700
+                                text-gray-900 dark:text-white
+                                focus:ring-2 focus:ring-blue-500"
                         />
 
                         <div

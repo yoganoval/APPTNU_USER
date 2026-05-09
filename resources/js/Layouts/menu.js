@@ -45,7 +45,13 @@ export const menus = [
         icon: 'calendar',
         href: route('admin.events.index'),
         permission: 'event.index',
-    }
+    },
 
+    {
+        label: 'Daftar Event',
+        icon: 'calendar-days',
+        href: route('admin.events.public'),
+        permission: 'event.register',
+    }
 
 ]

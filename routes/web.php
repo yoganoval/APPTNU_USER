@@ -10,7 +10,9 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CertificateTemplateController;
 use App\Http\Controllers\CertificateFieldController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventAttendanceController;
 
 
 /*
@@ -162,6 +164,30 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::resource('events', EventController::class)
         ->middleware('permission:event.view');
+
+        Route::get('/events-public', [EventRegistrationController::class, 'index'])
+            ->middleware('permission:event.register')
+            ->name('events.public');
+
+        Route::post('/events/{event}/register', [EventRegistrationController::class, 'store'])
+            ->middleware('permission:event.register')
+            ->name('events.register');
+
+        // =========================
+        // ABSENSI KEHADIRAN
+        // =========================
+
+        // Menampilkan halaman absensi
+        // Nama route: admin.events.attendance
+        Route::get('/events/{event}/attendance', [EventAttendanceController::class, 'edit'])
+            ->middleware('permission:event.view')
+            ->name('events.attendance');
+
+        // Menyimpan absensi
+        // Nama route: admin.events.attendance.update
+        Route::post('/events/{event}/attendance', [EventAttendanceController::class, 'update'])
+            ->middleware('permission:event.view')
+            ->name('events.attendance.update');
 
 });
 
