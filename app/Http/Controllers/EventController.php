@@ -33,22 +33,19 @@ class EventController extends Controller
     ========================= */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'nullable',
+        // Sesuaikan dengan field pada model:
+        // protected $fillable = ['title', 'description', 'date'];
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'date' => 'required|date',
-            'location' => 'required',
         ]);
 
-        Event::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'date' => $request->date,
-            'location' => $request->location,
-        ]);
+        Event::create($validated);
 
         return redirect()
-            ->route('events.index')
+            ->route('admin.events.index')
             ->with('success', 'Event berhasil dibuat');
     }
 
@@ -69,24 +66,17 @@ class EventController extends Controller
     ========================= */
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'nullable',
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'date' => 'required|date',
-            'location' => 'required',
         ]);
 
         $event = Event::findOrFail($id);
-
-        $event->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'date' => $request->date,
-            'location' => $request->location,
-        ]);
+        $event->update($validated);
 
         return redirect()
-            ->route('events.index')
+            ->route('admin.events.index')
             ->with('success', 'Event berhasil diupdate');
     }
 
@@ -96,11 +86,10 @@ class EventController extends Controller
     public function destroy($id)
     {
         $event = Event::findOrFail($id);
-
         $event->delete();
 
         return redirect()
-            ->route('events.index')
+            ->route('admin.events.index')
             ->with('success', 'Event berhasil dihapus');
     }
 }
