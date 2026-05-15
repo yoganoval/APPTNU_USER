@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\Certificate;
 use App\Models\CertificateTemplate;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CertificateController extends Controller
 {
@@ -115,4 +116,25 @@ class CertificateController extends Controller
             'Sertifikat berhasil digenerate'
         );
     }
+
+
+    public function download($id)
+    {
+        $certificate = Certificate::with([
+            'user',
+            'event',
+            'template.fields'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView(
+            'certificate.pdf',
+            compact('certificate')
+        )->setPaper('a4', 'landscape');
+
+        return $pdf->download(
+            'certificate-' . $certificate->id . '.pdf'
+        );
+    }
+
+
 }

@@ -29,6 +29,8 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "html2canvas": "^1.4.1",
+        "jspdf": "^4.2.1",
         "konva": "^10.3.0",
         "vue-konva": "^3.4.0",
         "ziggy-js": "^2.6.2"

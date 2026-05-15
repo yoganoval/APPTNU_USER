@@ -89,8 +89,8 @@ const submit = () => {
                         </label>
 
                         <input
-                            v-model="form.title"
-                            type="text"
+                            v-model="form.date"
+                            type="date"
                             class="w-full border border-gray-300 dark:border-gray-600 rounded p-2
                                 bg-white dark:bg-gray-700
                                 text-gray-900 dark:text-white

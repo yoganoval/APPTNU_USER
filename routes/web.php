@@ -131,10 +131,10 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('/certificates/{id}', [CertificateController::class, 'show'])
             ->name('certificates.show')
-            ->middleware('permissions:certivicate.index');
+            ->middleware('permission:certificate.generate');
 
 
-        Route::get('/certificates/download/{event}', [CertificateController::class, 'download'])
+        Route::get('/certificates/download/{id}', [CertificateController::class, 'download'])
             ->name('certificates.download')
             ->middleware('permission:certificate.generate');
 

@@ -72,7 +72,7 @@ defineProps({
                                     <!-- VIEW -->
                                     <Link
                                         :href="route(
-                                            'certificates.show',
+                                            'admin.certificates.show',
                                             certificate.id
                                         )"
 
@@ -84,7 +84,7 @@ defineProps({
                                     <!-- DOWNLOAD -->
                                     <a
                                         :href="route(
-                                            'certificates.download',
+                                            'admin.certificates.show',
                                             certificate.id
                                         )"
 
