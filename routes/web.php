@@ -13,6 +13,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventAttendanceController;
+use App\Http\Controllers\AnggotaController;
 
 
 /*
@@ -160,7 +161,8 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('permissions', PermissionController::class)
             ->middleware('permission:permission.view');
 
-
+        Route::resource('anggota', AnggotaController::class)
+            ->middleware('permission:anggota.view');
 
         Route::resource('events', EventController::class)
         ->middleware('permission:event.view');

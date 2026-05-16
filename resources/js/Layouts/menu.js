@@ -11,6 +11,14 @@ export const menus = [
         href: route('admin.users.index'),
         permission: 'user.view',
     },
+
+    { 
+    label: 'Anggota',
+        icon: 'users',
+        href: route('admin.anggota.index'),
+        permission: 'anggota.view',
+    },
+
     {
         label: 'Role Management',
         icon: 'shield',

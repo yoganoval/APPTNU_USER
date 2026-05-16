@@ -95,7 +95,7 @@ const jenisPerpustakaan = [
     <div class="w-full md:w-1/2 flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden">
         <div class="w-full max-w-2xl">
             <!-- Card -->
-            <div class="bg-white rounded-2xl shadow-2xl shadow-green-900/10 border border-green-100 overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-2xl shadow-green-900/10 border border-green-100 overflow-visible">
                 
                 <!-- HEADER -->
                 <div class="px-8 pt-8 pb-6 border-b border-green-100">
@@ -133,7 +133,7 @@ const jenisPerpustakaan = [
                 <div class="px-8 py-6" style="height: 460px;">
                     <form @submit.prevent="submit" class="h-full flex flex-col">
                         <!-- Scrollable content area with hidden scrollbar -->
-                        <div class="flex-1 overflow-y-auto" style="scrollbar-width: thin;">
+                        <div class="flex-1 overflow-y-auto px-3" style="scrollbar-width: thin;">
                             <!-- Panduan Card -->
                             <div v-if="step === 1" class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5 mb-6">
                                 <div class="flex items-start gap-3">
